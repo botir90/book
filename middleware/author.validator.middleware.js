@@ -1,17 +1,15 @@
-//  JOI VALIDATOR MIDDLEWARE
-// Bu middleware JOI schema orqali request body ni tekshiradi
-// Router da ishlatiladi: router.post('/register', validate(registerValidation), controller)
+
 
 const validate = (schema) => {
   return (req, res, next) => {
     const { error, value } = schema.validate(req.body, {
-      abortEarly: false,    // Barcha xatolarni birdan ko'rsatadi (true bo'lsa birinchi xatoda to'xtaydi)
-      allowUnknown: false,  // Noma'lum maydonlarga ruxsat bermaydi
-      stripUnknown: true,   // Noma'lum maydonlarni o'chirib tashlaydi
+      abortEarly: false,    
+      allowUnknown: false,  
+      stripUnknown: true,   
     });
 
     if (error) {
-      // Barcha xato xabarlarini array sifatida qaytarish
+  
       const errors = error.details.map((detail) => ({
         field: detail.path.join('.'),
         message: detail.message.replace(/['"]/g, ''),
@@ -24,7 +22,7 @@ const validate = (schema) => {
       });
     }
 
-    // Tozalangan qiymatni req.body ga yozish
+
     req.body = value;
     next();
   };

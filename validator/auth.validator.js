@@ -1,9 +1,6 @@
 const Joi = require('joi');
 
-// ✅ JOI VALIDATION - Server darajasida tekshiruv
-// Ma'lumot bazaga yetib bormadan oldin xatoni aniqlaydi
 
-// Register validation
 const registerValidation = Joi.object({
   name: Joi.string()
     .min(2)
@@ -47,7 +44,7 @@ const registerValidation = Joi.object({
     }),
 });
 
-// Login validation
+
 const loginValidation = Joi.object({
   email: Joi.string()
     .email({ tlds: { allow: false } })
@@ -66,7 +63,7 @@ const loginValidation = Joi.object({
     }),
 });
 
-// Forgot password validation
+
 const forgotPasswordValidation = Joi.object({
   email: Joi.string()
     .email({ tlds: { allow: false } })
@@ -78,7 +75,7 @@ const forgotPasswordValidation = Joi.object({
     }),
 });
 
-// Reset password validation
+
 const resetPasswordValidation = Joi.object({
   password: Joi.string()
     .min(6)

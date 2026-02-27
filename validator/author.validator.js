@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-// ✅ JOI VALIDATION - Author
+
 
 const createAuthorValidation = Joi.object({
   name: Joi.string()

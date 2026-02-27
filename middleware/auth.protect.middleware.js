@@ -2,16 +2,16 @@ const { verifyToken } = require('../utils/jwt');
 const User = require('../schema/auth.schema');
 const CustomError = require('../error/custom-error.handler');
 
-//  TOKEN TEKSHIRISH MIDDLEWARE
+
 const protect = async (req, res, next) => {
   try {
     let token;
 
-    // 1. Authorization header dan token olish
+
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
-    // 2. Cookie dan olish
+
     else if (req.cookies && req.cookies.token) {
       token = req.cookies.token;
     }
@@ -20,7 +20,7 @@ const protect = async (req, res, next) => {
       return next(new CustomError('Kirish uchun tizimga kiring', 401));
     }
 
-    // Token tekshirish
+ 
     const decoded = verifyToken(token);
     const user = await User.findById(decoded.id);
 
@@ -35,7 +35,7 @@ const protect = async (req, res, next) => {
   }
 };
 
-//  ROLE TEKSHIRISH MIDDLEWARE
+
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

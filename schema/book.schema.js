@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// ✅ MONGODB SCHEMA VALIDATION - Book
+
 const bookSchema = new mongoose.Schema(
   {
     title: {
@@ -71,7 +71,7 @@ const bookSchema = new mongoose.Schema(
   }
 );
 
-// Index
+
 bookSchema.index({ title: 'text', description: 'text' });
 bookSchema.index({ genre: 1, price: 1 });
 

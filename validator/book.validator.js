@@ -1,6 +1,5 @@
 const Joi = require('joi');
 
-// ✅ JOI VALIDATION - Book
 
 const createBookValidation = Joi.object({
   title: Joi.string()

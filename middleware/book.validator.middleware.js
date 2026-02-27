@@ -1,9 +1,8 @@
-//  BOOK VALIDATOR MIDDLEWARE
-// Query parametrlarini ham tekshirish uchun kengaytirilgan validate
+
 
 const Joi = require('joi');
 
-// Query params uchun validation (filterlash, sahifalash)
+
 const bookQueryValidation = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(10),
@@ -17,7 +16,7 @@ const bookQueryValidation = Joi.object({
   sortOrder: Joi.string().valid('asc', 'desc').default('desc'),
 });
 
-// Body va query ni tekshirish
+
 const validateQuery = (schema) => {
   return (req, res, next) => {
     const { error, value } = schema.validate(req.query, {

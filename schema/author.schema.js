@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// ✅ MONGODB SCHEMA VALIDATION - Author
+
 const authorSchema = new mongoose.Schema(
   {
     name: {
@@ -27,7 +27,7 @@ const authorSchema = new mongoose.Schema(
     email: {
       type: String,
       unique: true,
-      sparse: true, // null qiymatlar uchun unique tekshirilmaydi
+      sparse: true, 
       lowercase: true,
       match: [/^\S+@\S+\.\S+$/, 'Email noto\'g\'ri formatda'],
     },
@@ -49,12 +49,12 @@ const authorSchema = new mongoose.Schema(
   }
 );
 
-// Virtual field - kitoblar soni
+
 authorSchema.virtual('bookCount').get(function () {
   return this.books ? this.books.length : 0;
 });
 
-// Index qo'shish (qidirish tezligi uchun)
+
 authorSchema.index({ name: 'text' });
 
 const Author = mongoose.model('Author', authorSchema);
