@@ -2,7 +2,7 @@ const Book = require('../schema/book.schema');
 const Author = require('../schema/author.schema');
 const CustomError = require('../error/custom-error.handler');
 
-//  BARCHA KITOBLARNI OLISH (filterlash va sahifalash bilan)
+
 const getAllBooks = async (req, res, next) => {
   try {
     const {
@@ -50,7 +50,7 @@ const getAllBooks = async (req, res, next) => {
   }
 };
 
-//  BITTA KITOB
+
 const getBookById = async (req, res, next) => {
   try {
     const book = await Book.findById(req.params.id).populate('author');
@@ -68,19 +68,18 @@ const getBookById = async (req, res, next) => {
   }
 };
 
-//  KITOB YARATISH
+
 const createBook = async (req, res, next) => {
   try {
-    // Muallif mavjudligini tekshirish
+   
     const author = await Author.findById(req.body.author);
     if (!author) {
       return next(new CustomError('Ko\'rsatilgan muallif topilmadi', 404));
     }
 
-    //  MongoDB schema validation ishlaydi
     const book = await Book.create(req.body);
 
-    // Muallifning kitoblar ro'yxatiga qo'shish
+
     await Author.findByIdAndUpdate(
       req.body.author,
       { $push: { books: book._id } }
@@ -96,7 +95,7 @@ const createBook = async (req, res, next) => {
   }
 };
 
-//  KITOB YANGILASH
+
 const updateBook = async (req, res, next) => {
   try {
     const book = await Book.findByIdAndUpdate(
@@ -104,7 +103,7 @@ const updateBook = async (req, res, next) => {
       req.body,
       {
         new: true,
-        runValidators: true, // MongoDB schema validationni ishlatadi
+        runValidators: true, 
       }
     ).populate('author', 'name');
 
@@ -122,7 +121,7 @@ const updateBook = async (req, res, next) => {
   }
 };
 
-//  KITOB O'CHIRISH
+
 const deleteBook = async (req, res, next) => {
   try {
     const book = await Book.findByIdAndDelete(req.params.id);
@@ -131,7 +130,6 @@ const deleteBook = async (req, res, next) => {
       return next(new CustomError('Kitob topilmadi', 404));
     }
 
-    // Muallifdan ham o'chirish
     await Author.findByIdAndUpdate(
       book.author,
       { $pull: { books: book._id } }

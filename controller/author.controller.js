@@ -51,9 +51,7 @@ const getAuthorById = async (req, res, next) => {
   }
 };
 
-// MUALLIF YARATISH
-// JOI Middleware allaqachon tekshirgan (1-qatlam)
-// MongoDB schema ham tekshiradi (2-qatlam)
+
 const createAuthor = async (req, res, next) => {
   try {
     const author = await Author.create(req.body);
@@ -64,19 +62,19 @@ const createAuthor = async (req, res, next) => {
       data: author,
     });
   } catch (error) {
-    next(error); // Duplicate email → error middleware ushlaydi
+    next(error); 
   }
 };
 
-// MUALLIF YANGILASH
+
 const updateAuthor = async (req, res, next) => {
   try {
     const author = await Author.findByIdAndUpdate(
       req.params.id,
       req.body,
       {
-        new: true,           // Yangilangan hujjatni qaytaradi
-        runValidators: true, // MongoDB schema validationni ishga tushiradi
+        new: true,           
+        runValidators: true, 
       }
     );
 
@@ -94,7 +92,7 @@ const updateAuthor = async (req, res, next) => {
   }
 };
 
-//  MUALLIF O'CHIRISH
+
 const deleteAuthor = async (req, res, next) => {
   try {
     const author = await Author.findByIdAndDelete(req.params.id);

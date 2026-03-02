@@ -8,7 +8,6 @@ const Auth = new Schema({
     maxlength: [50, 'Ism 50 ta belgidan iborat bo\'lishi kerak'],
     set: value => value.trim()
   },
-
   email: {
     type: String,
     required: [true, 'Email majburiy'],
@@ -16,28 +15,27 @@ const Auth = new Schema({
     lowercase: true,
     trim: true
   },
-
   password: {
     type: String,
     required: [true, 'Parol majburiy'],
     minlength: [6, 'Parol kamida 6 ta belgidan iborat bo\'lishi kerak'],
     maxlength: [100, 'Parol 100 ta belgidan iborat bo\'lishi kerak']
   },
-
   role: {
     type: String,
     enum: ['user', 'admin'],
     default: 'user'
   },
-
+  verified: {
+    type: Boolean,
+    default: false
+  },
   otp: {
     type: String
   },
-
   otptime: {
     type: Date
   }
-
 }, {
   versionKey: false,
   timestamps: true

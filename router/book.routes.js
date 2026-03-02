@@ -1,6 +1,5 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-
 
 const {
   getAllBooks,
@@ -8,41 +7,40 @@ const {
   createBook,
   updateBook,
   deleteBook,
-} = require('../controller/book.controller');
+} = require("../controller/book.controller");
 
+const validate = require("../middleware/author.validator.middleware");
+const {
+  validateQuery,
+  bookQueryValidation,
+} = require("../middleware/book.validator.middleware");
+const { protect, authorize } = require("../middleware/auth.protect.middleware");
 
-const validate = require('../middleware/author.validator.middleware');
-const { validateQuery, bookQueryValidation } = require('../middleware/book.validator.middleware');
-const { protect, authorize } = require('../middleware/auth.protect.middleware');
+const {
+  createBookValidation,
+  updateBookValidation,
+} = require("../validator/book.validator");
 
+router.get("/", validateQuery(bookQueryValidation), getAllBooks);
 
-const { createBookValidation, updateBookValidation } = require('../validator/book.validator');
-
-
-
-router.get('/', validateQuery(bookQueryValidation), getAllBooks);
-
-
-router.get('/:id', getBookById);
-
+router.get("/:id", getBookById);
 
 router.post(
-  '/',
+  "/",
   protect,
-  authorize('admin'),
+  authorize("admin"),
   validate(createBookValidation),
-  createBook
+  createBook,
 );
-
 
 router.put(
-  '/:id',
+  "/:id",
   protect,
-  authorize('admin'),
+  authorize("admin"),
   validate(updateBookValidation),
-  updateBook
+  updateBook,
 );
 
-router.delete('/:id', protect, authorize('admin'), deleteBook);
+router.delete("/:id", protect, authorize("admin"), deleteBook);
 
 module.exports = router;
