@@ -113,4 +113,58 @@ const logout = async (req, res, next) => {
     next(error);
   }
 };
-module.exports = { register, verify ,login , logout};
+// Profilni ko'rish
+const getMe = async (req, res, next) => {
+  try {
+    const user = await AuthSchema.findById(req.user._id).select('-password -otp -otptime');
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Profilni tahrirlash
+const updateMe = async (req, res, next) => {
+  try {
+    const { name, phone, avatar } = req.body;
+
+    const user = await AuthSchema.findByIdAndUpdate(
+      req.user._id,
+      { name, phone, avatar },
+      { new: true, runValidators: true }
+    ).select('-password -otp -otptime');
+
+    res.status(200).json({ success: true, data: user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Parolni o'zgartirish
+const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      throw CustomErrorhandler.BadRequest('Barcha maydonlar to\'ldirilishi shart');
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw CustomErrorhandler.BadRequest('Yangi parollar mos kelmaydi');
+    }
+
+    const user = await AuthSchema.findById(req.user._id);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw CustomErrorhandler.BadRequest('Joriy parol noto\'g\'ri');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 12);
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Parol muvaffaqiyatli o\'zgartirildi' });
+  } catch (error) {
+    next(error);
+  }
+};
+module.exports = { register, verify ,login , logout, getMe, updateMe, changePassword};

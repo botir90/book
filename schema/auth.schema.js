@@ -38,7 +38,17 @@ const Auth = new Schema({
   }
 }, {
   versionKey: false,
-  timestamps: true
+  timestamps: true,
+
+  phone: {
+    type: String,
+    optional: true,
+    default: null
+  },
+  avatar: {
+    type: String,
+    default: null
+  },
 });
 
 module.exports = model('auth', Auth);
