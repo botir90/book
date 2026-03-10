@@ -1,0 +1,1135 @@
+openapi: 3.0.0
+info:
+  title: DevBooks API
+  description: DevBooks.uz kitob platformasi uchun REST API
+  version: 1.0.0
+  contact:
+    name: Botirbek
+    email: qodirberganovbotir@gmail.com
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local server
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        verified:
+          type: boolean
+        phone:
+          type: string
+        avatar:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
+    Author:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        bio:
+          type: string
+        birthYear:
+          type: integer
+        nationality:
+          type: string
+        email:
+          type: string
+        isActive:
+          type: boolean
+
+    Book:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        author:
+          type: string
+        genre:
+          type: string
+          enum: [roman, hikoya, she'r, ilmiy, fantastika, detektiv, boshqa]
+        publishedYear:
+          type: integer
+        pages:
+          type: integer
+        price:
+          type: number
+        stock:
+          type: integer
+        description:
+          type: string
+        isAvailable:
+          type: boolean
+        rating:
+          type: number
+
+    Audio:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        audioUrl:
+          type: string
+        duration:
+          type: string
+        book:
+          type: string
+
+    Ebook:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        pdfUrl:
+          type: string
+        book:
+          type: string
+
+    Quote:
+      type: object
+      properties:
+        _id:
+          type: string
+        text:
+          type: string
+        book:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+
+tags:
+  - name: Auth
+    description: Autentifikatsiya
+  - name: Profile
+    description: Profil boshqaruvi
+  - name: Authors
+    description: Mualliflar
+  - name: Books
+    description: Kitoblar
+  - name: Audio
+    description: Audio kitoblar
+  - name: Ebooks
+    description: Elektron kitoblar
+  - name: Quotes
+    description: Iqtiboslar
+
+paths:
+  # ===================== AUTH =====================
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Ro'yxatdan o'tish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  example: Botirbek
+                email:
+                  type: string
+                  example: botir@gmail.com
+                password:
+                  type: string
+                  example: botir90
+      responses:
+        '200':
+          description: Muvaffaqiyatli ro'yxatdan o'tildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ro'yxatdan o'tish muvaffaqiyatli amalga oshirildi. Iltimos, emailingizni tekshiring.
+        '400':
+          description: Xato ma'lumotlar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/verify:
+    post:
+      tags: [Auth]
+      summary: Email tasdiqlash
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, otp]
+              properties:
+                email:
+                  type: string
+                  example: botir@gmail.com
+                otp:
+                  type: string
+                  example: "123456"
+      responses:
+        '200':
+          description: Muvaffaqiyatli tasdiqlandi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: OTP xato yoki muddati tugagan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Tizimga kirish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: botir@gmail.com
+                password:
+                  type: string
+                  example: botir90
+      responses:
+        '200':
+          description: Muvaffaqiyatli kirildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Email yoki parol xato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Tizimdan chiqish
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Muvaffaqiyatli chiqildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Token topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ===================== PROFILE =====================
+  /auth/me:
+    get:
+      tags: [Profile]
+      summary: Profilni ko'rish
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profil ma'lumotlari
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Avtorizatsiya xatosi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Profile]
+      summary: Profilni tahrirlash
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Botirbek
+                phone:
+                  type: string
+                  example: "+998901234567"
+                avatar:
+                  type: string
+                  example: https://example.com/avatar.jpg
+      responses:
+        '200':
+          description: Profil yangilandi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Avtorizatsiya xatosi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/change-password:
+    put:
+      tags: [Profile]
+      summary: Parolni o'zgartirish
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword, confirmPassword]
+              properties:
+                currentPassword:
+                  type: string
+                  example: botir90
+                newPassword:
+                  type: string
+                  example: botir123
+                confirmPassword:
+                  type: string
+                  example: botir123
+      responses:
+        '200':
+          description: Parol o'zgartirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Parol xato
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ===================== AUTHORS =====================
+  /authors:
+    get:
+      tags: [Authors]
+      summary: Barcha mualliflar
+      responses:
+        '200':
+          description: Mualliflar ro'yxati
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Author'
+    post:
+      tags: [Authors]
+      summary: Muallif qo'shish
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: Abdulla Qodiriy
+                bio:
+                  type: string
+                  example: O'zbek adabiyotining buyuk namoyandasi
+                birthYear:
+                  type: integer
+                  example: 1894
+                nationality:
+                  type: string
+                  example: O'zbek
+                email:
+                  type: string
+                  example: author@gmail.com
+      responses:
+        '201':
+          description: Muallif yaratildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Author'
+        '400':
+          description: Validatsiya xatosi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /authors/{id}:
+    get:
+      tags: [Authors]
+      summary: Muallif ma'lumotlari
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Muallif ma'lumotlari
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Author'
+        '404':
+          description: Muallif topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Authors]
+      summary: Muallif tahrirlash
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                bio:
+                  type: string
+                birthYear:
+                  type: integer
+                nationality:
+                  type: string
+      responses:
+        '200':
+          description: Muallif yangilandi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Author'
+        '404':
+          description: Muallif topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Authors]
+      summary: Muallif o'chirish
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Muallif o'chirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '404':
+          description: Muallif topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ===================== BOOKS =====================
+  /books:
+    get:
+      tags: [Books]
+      summary: Barcha kitoblar
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+        - in: query
+          name: genre
+          schema:
+            type: string
+            enum: [roman, hikoya, she'r, ilmiy, fantastika, detektiv, boshqa]
+      responses:
+        '200':
+          description: Kitoblar ro'yxati
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+    post:
+      tags: [Books]
+      summary: Kitob qo'shish
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, author, genre, price]
+              properties:
+                title:
+                  type: string
+                  example: O'tkan kunlar
+                author:
+                  type: string
+                  example: 69a7ac33c8dea435a08324ab
+                genre:
+                  type: string
+                  enum: [roman, hikoya, she'r, ilmiy, fantastika, detektiv, boshqa]
+                  example: roman
+                price:
+                  type: number
+                  example: 27000
+                publishedYear:
+                  type: integer
+                  example: 1925
+                pages:
+                  type: integer
+                  example: 376
+                description:
+                  type: string
+                  example: O'zbek adabiyotining eng mashhur romani
+      responses:
+        '201':
+          description: Kitob yaratildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Book'
+        '400':
+          description: Validatsiya xatosi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /books/{id}:
+    get:
+      tags: [Books]
+      summary: Kitob ma'lumotlari
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Kitob ma'lumotlari
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Book'
+        '404':
+          description: Kitob topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Books]
+      summary: Kitob tahrirlash
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Kitob yangilandi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Book'
+        '404':
+          description: Kitob topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Books]
+      summary: Kitob o'chirish
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Kitob o'chirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '404':
+          description: Kitob topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ===================== AUDIO =====================
+  /audios:
+    post:
+      tags: [Audio]
+      summary: Audio qo'shish
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, audioUrl, book]
+              properties:
+                title:
+                  type: string
+                  example: O'tkan kunlar audio
+                audioUrl:
+                  type: string
+                  example: https://example.com/audio.mp3
+                duration:
+                  type: string
+                  example: "5:30"
+                book:
+                  type: string
+                  example: 69a7ac8ac8dea435a08324af
+      responses:
+        '201':
+          description: Audio qo'shildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Audio'
+        '400':
+          description: Xato ma'lumotlar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /audios/{id}:
+    put:
+      tags: [Audio]
+      summary: Audio tahrirlash
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                audioUrl:
+                  type: string
+                duration:
+                  type: string
+      responses:
+        '200':
+          description: Audio yangilandi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Audio'
+        '404':
+          description: Audio topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Audio]
+      summary: Audio o'chirish
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audio o'chirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '404':
+          description: Audio topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /audios/{id}/url:
+    get:
+      tags: [Audio]
+      summary: Audio URL olish
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audio URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  audioUrl:
+                    type: string
+        '404':
+          description: Audio topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /books/{bookId}/audios:
+    get:
+      tags: [Audio]
+      summary: Kitob audiolari
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audio ro'yxati
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Audio'
+        '404':
+          description: Audio topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ===================== EBOOKS =====================
+  /ebooks:
+    post:
+      tags: [Ebooks]
+      summary: Elektron kitob qo'shish
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, pdfUrl, book]
+              properties:
+                title:
+                  type: string
+                  example: O'tkan kunlar PDF
+                pdfUrl:
+                  type: string
+                  example: https://example.com/book.pdf
+                book:
+                  type: string
+                  example: 69a7ac8ac8dea435a08324af
+      responses:
+        '201':
+          description: Elektron kitob qo'shildi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Ebook'
+        '400':
+          description: Xato ma'lumotlar
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ebooks/{id}:
+    put:
+      tags: [Ebooks]
+      summary: Elektron kitob tahrirlash
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                pdfUrl:
+                  type: string
+      responses:
+        '200':
+          description: Elektron kitob yangilandi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Ebook'
+        '404':
+          description: Elektron kitob topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags: [Ebooks]
+      summary: Elektron kitob o'chirish
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Elektron kitob o'chirildi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '404':
+          description: Elektron kitob topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /ebooks/{id}/url:
+    get:
+      tags: [Ebooks]
+      summary: PDF URL olish
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: PDF URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  pdfUrl:
+                    type: string
+        '404':
+          description: Elektron kitob topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /books/{bookId}/ebooks:
+    get:
+      tags: [Ebooks]
+      summary: Kitob elektron kitoblari
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Elektron kitoblar ro'yxati
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ebook'
+        '404':
+          description: Elektron kitob topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ===================== QUOTES =====================
+  /books/{bookId}/quotes:
+    get:
+      tags: [Quotes]
+      summary: Kitob iqtiboslari
+      parameters:
+        - in: path
+          name: bookId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Iqtiboslar ro'yxati
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  count:
+                    type: integer
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Quote'
+        '404':
+          description: Iqtibos topilmadi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
